@@ -6,6 +6,8 @@
 #include <d3dx12.h>
 #include<string>
 
+#include"FBXModel.h"
+#include "FBXModel.h"
 class FbxLoader
 {
 private:
@@ -27,9 +29,9 @@ public:
 	void Finalize();
 
 	void LoadModelFromFile(const string& modelName);
-
-
-
+	
+	void ParseNodeRecursive(FBXModel* fbxModel, FbxNode* fbxNode, FBXModel::Node* parent = nullptr);
+	
 private:
 	// privateなコンストラクタ（シングルトンパターン）
 	FbxLoader() = default;
