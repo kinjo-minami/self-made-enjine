@@ -13,9 +13,12 @@ class FbxLoader
 private:
 	using string = std::string;
 
+
+
 public:
 	static const string baseDirectory;
 
+	static const string defaultTextureFileName;
 
 public:
 	/// <summary>
@@ -29,9 +32,24 @@ public:
 	void Finalize();
 
 	void LoadModelFromFile(const string& modelName);
-	
+
 	void ParseNodeRecursive(FBXModel* fbxModel, FbxNode* fbxNode, FBXModel::Node* parent = nullptr);
-	
+
+	//メッシュ
+	void ParseMesh(FBXModel* fbxModel, FbxNode* fbxNode);
+
+	void ParseMeshVertices(FBXModel* fbxModel, FbxMesh* fbxMesh);
+
+	void ParseMeshFaces(FBXModel* fbxModel, FbxMesh* fbxMesh);
+
+	void ParseMaterial(FBXModel* fbxModel, FbxNode* fbxNode);
+
+	void LoadTexture(FBXModel* fbxModel, const std::string& fullpath);
+
+	//ディレクトリを含んだファイルパスからファイル名を抽出する
+	std::string ExtractFileName(const std::string& path);
+
+
 private:
 	// privateなコンストラクタ（シングルトンパターン）
 	FbxLoader() = default;
@@ -49,4 +67,5 @@ private:
 	FbxManager* fbxManager = nullptr;
 
 	FbxImporter* fbxImporter = nullptr;
+
 };

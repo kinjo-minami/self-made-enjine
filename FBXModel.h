@@ -2,6 +2,7 @@
 #include<string>
 #include<DirectXMath.h>
 #include<vector>
+#include<DirectXTex.h>
 
 
 
@@ -14,6 +15,8 @@ private:
 	using XMFLOAT4 = DirectX::XMFLOAT4;
 	using XMMATRIX = DirectX::XMMATRIX;
 	using XMVECTOR = DirectX::XMVECTOR;
+	using TexMetadata = DirectX::TexMetadata;
+	using ScratchImage = DirectX::ScratchImage;
 
 public:
 
@@ -36,10 +39,32 @@ public:
 		Node* parent = nullptr;
 
 	};
+
+	struct VertexPosNormalUv
+	{
+		XMFLOAT3 pos;
+
+		XMFLOAT3 normal;
+		
+		XMFLOAT2 uv;
+	};
+
+	XMFLOAT3 ambient = { 1,1,1 };
+	XMFLOAT3 diffuse = { 1,1,1 };
+	TexMetadata metadata = {};
+	ScratchImage scratchImg = {};
+
+
 private:
 
 	std::string name;
 
 	std::vector<Node> nodes;
+
+	Node* meshNode = nullptr;
+
+	std::vector<VertexPosNormalUv> vertices;
+
+	std::vector<unsigned short> indices;
 
 };
