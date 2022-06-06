@@ -7,6 +7,7 @@
 #include <wrl.h>
 #include <d3d12.h>
 #include <d3dx12.h>
+#include<fbxsdk.h>
 
 
 class FBXModel
@@ -23,6 +24,7 @@ private:
 	using string = std::string;
 	template <class T> using vector = std::vector<T>;
 public:
+	static const int MAX_BONE_INDICES = 4;
 
 	friend class FbxLoader;
 	struct Node
@@ -44,19 +46,36 @@ public:
 
 	};
 
-	struct VertexPosNormalUv
+	struct VertexPosNormalUvSkin
 	{
 		XMFLOAT3 pos;
 
 		XMFLOAT3 normal;
 		
 		XMFLOAT2 uv;
+
+		UINT boneIndex[MAX_BONE_INDICES];
+
+		float boneWeight[MAX_BONE_INDICES];
 	};
+
+	struct Bone
+	{
+		std::string name;
+
+		XMMATRIX invInitialPose;
+
+		FbxCluster* fbxCluster;
+
+		Bone(const std::string& name_) { this->name = name_; }
+	};
+	
 
 	XMFLOAT3 ambient = { 1,1,1 };
 	XMFLOAT3 diffuse = { 1,1,1 };
 	TexMetadata metadata = {};
 	ScratchImage scratchImg = {};
+
 
 private:
 
@@ -77,16 +96,29 @@ public:
 
 	const XMMATRIX& GetModelTransform() { return meshNode->globalTransform; }
 
+	FbxScene* GetFbxScene() { return fbxscene; }
+
+	~FBXModel();
+	vector<Bone>& GetBones() { return bones; }
 private:
 
 	string name;
 
 	vector<Node> nodes;
 
+	vector<Bone> bones;
+
+
 	Node* meshNode = nullptr;
 
-	vector<VertexPosNormalUv> vertices;
+	vector<VertexPosNormalUvSkin> vertices;
 
 	vector<unsigned short> indices;
+
+
+	FbxScene* fbxscene = nullptr;
+
+
+
 
 };

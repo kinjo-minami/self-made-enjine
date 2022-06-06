@@ -6,7 +6,10 @@
 #include <DirectXMath.h>
 #include <d3dx12.h>
 #include<string>
+
 #include"Model.h"
+#include"Camera.h"
+//#include"PipelineSet.h"
 
 /// 3Dオブジェクト
 class Object3d
@@ -21,12 +24,28 @@ private: // エイリアス
 	using XMMATRIX = DirectX::XMMATRIX;
 	//モデル
 	Model* model = nullptr;
+	// カメラ
+	//Camera* camera = nullptr;
+	//static Camera* camera;
+
 public: // サブクラス
+		// パイプラインセット
+	struct PipelineSet
+	{
+		// ルートシグネチャ
+		ComPtr<ID3D12RootSignature> rootsignature;
+		// パイプラインステートオブジェクト
+		ComPtr<ID3D12PipelineState> pipelinestate;
+	};
+
 	// 定数バッファ用データ構造体
 	struct ConstBufferDataB0
 	{
-		//XMFLOAT4 color;	// 色 (RGBA)
-		XMMATRIX mat;	// ３Ｄ変換行列
+		//XMMATRIX mat;	// ３Ｄ変換行列
+		XMMATRIX viewproj;
+		XMMATRIX world;
+		XMFLOAT3 cameraPos;
+		//XMFLOAT4 color;
 	};
 private:
 	static const int division = 50;
@@ -34,20 +53,35 @@ private:
 	static const float prizmHeight;
 	static const int planeCount = division * 2 + division * 2;
 	static const int vertexCount = planeCount * 3;
+
 public: // 静的メンバ関数
-	static bool StaticInitialize(ID3D12Device* device, int window_width, int window_height);
+	static void StaticInitialize(ID3D12Device* device, Camera* camera = nullptr);
+
+	/*static void SetCamera(Camera* camera) {
+		Object3d::camera = camera;
+	}*/
 
 	/// 描画前処理
 	static void PreDraw(ID3D12GraphicsCommandList* cmdList);
 
+	/// <summary>
+	/// カメラのセット
+	/// </summary>
+	/// <param name="camera">カメラ</param>
+	static void SetCamera(Camera* camera) {
+		Object3d::camera = camera;
+	}
+
 	/// 描画後処理
 	static void PostDraw();
 
+	//Object3d* Create(Model* model);
+
 	/// 3Dオブジェクト生
-	static Object3d* Create();
+	static Object3d* Create(Model* model = nullptr);
 
 	/// 視点座標の取得
-	static const XMFLOAT3& GetEye() { return eye; }
+	/*static const XMFLOAT3& GetEye() { return eye; }
 
 	/// 視点座標の設定
 	static void SetEye(XMFLOAT3 eye);
@@ -59,7 +93,7 @@ public: // 静的メンバ関数
 	static void SetTarget(XMFLOAT3 target);
 
 	/// ベクトルによる移動
-	static void CameraMoveVector(XMFLOAT3 move);
+	static void CameraMoveVector(XMFLOAT3 move);*/
 
 	//
 	void SetModel(Model* model) { this->model = model; }
@@ -70,36 +104,43 @@ private: // 静的メンバ変数
 	static ID3D12Device* device;
 	// コマンドリスト
 	static ID3D12GraphicsCommandList* cmdList;
-	// ルートシグネチャ
-	static ComPtr<ID3D12RootSignature> rootsignature;
-	// パイプラインステートオブジェクト
-	static ComPtr<ID3D12PipelineState> pipelinestate;
+	//// ルートシグネチャ
+	//static ComPtr<ID3D12RootSignature> rootsignature;
+	//// パイプラインステートオブジェクト
+	//static ComPtr<ID3D12PipelineState> pipelinestate;
+	// カメラ
+	static Camera* camera;
+	// パイプライン
+	static PipelineSet pipelineSet;
+
+
 	// ビュー行列
-	static XMMATRIX matView;
-	// 射影行列
-	static XMMATRIX matProjection;
-	// 視点座標
-	static XMFLOAT3 eye;
-	// 注視点座標
-	static XMFLOAT3 target;
-	// 上方向ベクトル
-	static XMFLOAT3 up;
+	//static XMMATRIX matView;
+	//// 射影行列
+	//static XMMATRIX matProjection;
+	//// 視点座標
+	//static XMFLOAT3 eye;
+	//// 注視点座標
+	//static XMFLOAT3 target;
+	//// 上方向ベクトル
+	//static XMFLOAT3 up;
 
 
 private:// 静的メンバ関数
 	/// カメラ初期化
-	static void InitializeCamera(int window_width, int window_height);
+	//static void InitializeCamera(int window_width, int window_height);
 
 	/// グラフィックパイプライン生成
 	static bool InitializeGraphicsPipeline();
 
 	/// テクスチャ読み込み
-	static bool LoadTexture(const std::string& directoryPath, const std::string& filename);
+	//static bool LoadTexture(const std::string& directoryPath, const std::string& filename);
 
 	static void CreateModel();
 
+
 	/// ビュー行列を更新
-	static void UpdateViewMatrix();
+	//static void UpdateViewMatrix();
 
 public: // メンバ関数
 	//初期化
@@ -115,6 +156,15 @@ public: // メンバ関数
 	/// 座標の設定
 	void SetPosition(XMFLOAT3 position) { this->position = position; }
 
+	/// 回転の取得
+	const XMFLOAT3& GetRotation() { return rotation; }
+
+	/// 回転の設定
+	void SetRotation(XMFLOAT3 rotation) { this->rotation = rotation; }
+
+	void SetScale(XMFLOAT3 scale) { this->scale = scale; }
+
+
 private: // メンバ変数
 	ComPtr<ID3D12Resource> constBuffB0; // 定数バッファ
 	// 色
@@ -129,5 +179,5 @@ private: // メンバ変数
 	XMMATRIX matWorld;
 	// 親オブジェクト
 	Object3d* parent = nullptr;
-};
 
+};

@@ -4,7 +4,7 @@ void FBXModel::CreateBuffers(ID3D12Device* device)
 {
 	HRESULT result;
 
-	UINT sizeVB = static_cast<UINT>(sizeof(VertexPosNormalUv) * vertices.size());
+	UINT sizeVB = static_cast<UINT>(sizeof(VertexPosNormalUvSkin) * vertices.size());
 	result = device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 		D3D12_HEAP_FLAG_NONE,
@@ -12,7 +12,7 @@ void FBXModel::CreateBuffers(ID3D12Device* device)
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr, IID_PPV_ARGS(&vertBuff));
 
-	VertexPosNormalUv* vertMap = nullptr;
+	VertexPosNormalUvSkin* vertMap = nullptr;
 	result = vertBuff->Map(0, nullptr, (void**)&vertMap);
 	if (SUCCEEDED(result))
 	{
@@ -92,4 +92,26 @@ void FBXModel::CreateBuffers(ID3D12Device* device)
 	device->CreateShaderResourceView(texBuff.Get(),
 		&srvDesc,
 		descHeapSRV->GetCPUDescriptorHandleForHeapStart());
+}
+
+void FBXModel::Draw(ID3D12GraphicsCommandList* cmdList)
+{
+	cmdList->IASetVertexBuffers(0, 1, &vbView);
+	//インデックスバッファをセット
+	cmdList->IASetIndexBuffer(&ibView);
+
+	//デスクリプタヒープのセット
+	ID3D12DescriptorHeap* ppHeaps[] = { descHeapSRV.Get() };
+	cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+	//シェーダリソースビューをセット
+	cmdList->SetGraphicsRootDescriptorTable(1, descHeapSRV->GetGPUDescriptorHandleForHeapStart());
+
+	//描画コマンド
+	cmdList->DrawIndexedInstanced((UINT)indices.size(), 1, 0, 0, 0);
+
+}
+
+FBXModel::~FBXModel()
+{
+	fbxscene->Destroy();
 }

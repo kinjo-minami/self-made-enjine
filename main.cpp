@@ -10,6 +10,8 @@
 #include"SpriteCommon.h"
 #include"Sprite.h"
 #include"FbxLoader.h"
+#include"ObjectFBX3d.h"
+#include"DebugCamera.h"
 //#include"fbxsdk.h"
 
 
@@ -37,13 +39,31 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	Input* input = nullptr;
 	input = new Input();
 	input->Initialize(winApp);
+	DebugCamera* camera = new DebugCamera(WinApp::window_width, WinApp::window_height, input);
+	
 
-	Object3d::StaticInitialize(dxCommon->GetDev(), winApp->window_width, winApp->window_height);
+	//Object3d::StaticInitialize(dxCommon->GetDev(), winApp->window_width, winApp->window_height);
+	Object3d::StaticInitialize(dxCommon->GetDev());
+
+
+	ObjectFBX3d::SetDevice(dxCommon->GetDev());
+
+	ObjectFBX3d::SetCamera(camera);
+
+	ObjectFBX3d::CreateGraphicsPipeline();
 
 	FbxLoader::GetInstance()->Initalize(dxCommon->GetDev());
 
-	FbxLoader::GetInstance()->LoadModelFromFile("cube");
+	//FbxLoader::GetInstance()->LoadModelFromFile("cube");
 
+	FBXModel* fbxModel = nullptr;
+	ObjectFBX3d* objectFBX3d = nullptr;
+	fbxModel = FbxLoader::GetInstance()->LoadModelFromFile("boneTest");
+
+	objectFBX3d = new ObjectFBX3d;
+	objectFBX3d->Initialize();
+	objectFBX3d->SetModel(fbxModel);
+	
 #pragma endregion DirectX初期化処理
 
 #pragma region 描画初期化処理
@@ -93,8 +113,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	objPost->SetPosition({ -10,0,-5 });
 	objChr->SetPosition({ +10,0,+5 });
 
-	objPost->Update();
-	objChr->Update();
+	//objPost->Update();
+	//objChr->Update();
 
 #pragma endregion 描画初期化処理
 
@@ -110,7 +130,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 #pragma region DirectX毎フレーム処理
 		// DirectX毎フレーム処理　ここから
-
+		objectFBX3d->PlayAnimation();
 		input->Update();
 
 		const int cycle = 540; // 繰り返しの周期
@@ -147,9 +167,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		{
 
 		}
-
-		objPost->Update();
-		objChr->Update();
+		objectFBX3d->Update();
+	/*	objPost->Update();
+		objChr->Update();*/
 		for (auto& sprite : sprites)
 		{
 			sprite->Update();
@@ -162,11 +182,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		dxCommon->PreDraw();
 
-		Object3d::PreDraw(dxCommon->GetCmdList());
-		/*objPost->Draw();
-		objChr->Draw();*/
-		Object3d::PostDraw();
-
+		//Object3d::PreDraw(dxCommon->GetCmdList());
+		///*objPost->Draw();
+		//objChr->Draw();*/
+		//Object3d::PostDraw();
+		objectFBX3d->Draw(dxCommon->GetCmdList());
 		spriteCommon->PreDraw();
 		//for (auto& sprite : sprites)
 		//{
@@ -188,6 +208,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	winApp->Finalize();
 #pragma endregion WindowsAPI後始末
 	FbxLoader::GetInstance()->Finalize();
+//	delete fbxModel;
+	delete objectFBX3d;
+
 	delete input;
 	delete winApp;
 	delete spriteCommon;

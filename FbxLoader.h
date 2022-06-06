@@ -12,6 +12,12 @@ class FbxLoader
 private:
 	using string = std::string;
 
+	using XMFLOAT2 = DirectX::XMFLOAT2;
+	using XMFLOAT3 = DirectX::XMFLOAT3;
+	using XMFLOAT4 = DirectX::XMFLOAT4;
+	using XMMATRIX = DirectX::XMMATRIX;
+	template <class T> using vector = std::vector<T>;
+	template <class T> using list = std::list<T>;
 
 
 public:
@@ -30,7 +36,8 @@ public:
 
 	void Finalize();
 
-	void LoadModelFromFile(const string& modelName);
+	//void LoadModelFromFile(const string& modelName);
+	FBXModel* LoadModelFromFile(const string& modelName);
 
 	void ParseNodeRecursive(FBXModel* fbxModel, FbxNode* fbxNode, FBXModel::Node* parent = nullptr);
 
@@ -44,6 +51,11 @@ public:
 	void ParseMaterial(FBXModel* fbxModel, FbxNode* fbxNode);
 
 	void LoadTexture(FBXModel* fbxModel, const std::string& fullpath);
+
+	static void ConvertMatrixFromFbx(XMMATRIX* dst, const FbxMatrix& src);
+
+	void ParseSkin(FBXModel* fbxModel, FbxMesh* fbxMesh);
+
 
 	//ディレクトリを含んだファイルパスからファイル名を抽出する
 	std::string ExtractFileName(const std::string& path);
