@@ -1,7 +1,11 @@
 #include "Camera.h"
 
 using namespace DirectX;
-
+/// <summary>
+/// 
+/// </summary>
+/// <param name="window_width"></param>
+/// <param name="window_height"></param>
 Camera::Camera(int window_width, int window_height)
 {
 	aspectRatio = (float)window_width / window_height;
@@ -125,7 +129,7 @@ void Camera::UpdateProjectionMatrix()
 	matProjection = XMMatrixPerspectiveFovLH(
 		XMConvertToRadians(60.0f),
 		aspectRatio,
-		0.1f, 10000.0f
+		0.1f, 1000.0f
 	);
 }
 

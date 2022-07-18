@@ -2,6 +2,18 @@
 #include<d3dx12.h>
 using namespace DirectX;
 using namespace Microsoft::WRL;
+Sprite::Sprite(/*UINT texNumber, XMFLOAT3 position, XMFLOAT2 size, XMFLOAT4 color, XMFLOAT2 anchorpoint, bool isFlipX, bool isFlipY*/)
+{
+  /*  this->position_ = position;
+    this->size_ = size;
+    this->anchorpoint_ = anchorpoint;
+    this->matWorld_ = XMMatrixIdentity();
+    this->color_ = color;
+    this->texNumber_ = texNumber;
+    this->isFlipX_ = isFlipX;
+    this->isFlipY_ = isFlipY;
+    this->texSize_ = size;*/
+}
 Sprite* Sprite::Create(SpriteCommon* spriteCommon, UINT texNumber, XMFLOAT2 anchorpoint, bool isFlipX, bool isFlipY)
 {
     Sprite* instance = new Sprite();
@@ -141,7 +153,8 @@ void Sprite::Update()
     matWorld_ *= XMMatrixRotationZ(XMConvertToRadians(rotation_));
     // 平行移動
     matWorld_ *= XMMatrixTranslation(position_.x,position_.y,position_.z);
-
+    TransferVertexBuffer();
+    
     // 定数バッファの転送
     ConstBufferData* constMap = nullptr;
     HRESULT result = constBuff_->Map(0, nullptr, (void**)&constMap);
@@ -169,4 +182,7 @@ void Sprite::Draw()
     SspriteCommon->SetGraphicsRootDescriptorTable(1, texNumber_);
     // ポリゴンの描画（4頂点で四角形）
     cmdList->DrawInstanced(4, 1, 0, 0);
+
+
 }
+

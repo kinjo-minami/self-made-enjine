@@ -12,6 +12,8 @@
 #include"FbxLoader.h"
 #include"ObjectFBX3d.h"
 #include"DebugCamera.h"
+#include"PostEffect.h"
+#include"PostSprite.h"
 //#include"fbxsdk.h"
 
 
@@ -39,86 +41,57 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	Input* input = nullptr;
 	input = new Input();
 	input->Initialize(winApp);
-	DebugCamera* camera = new DebugCamera(WinApp::window_width, WinApp::window_height, input);
+
+	DebugCamera* camera = new DebugCamera(WinApp::window_width, WinApp::window_height);
 	
-
-	//Object3d::StaticInitialize(dxCommon->GetDev(), winApp->window_width, winApp->window_height);
-	Object3d::StaticInitialize(dxCommon->GetDev());
-
+	Object3d::StaticInitialize(dxCommon->GetDev(), winApp->window_width, winApp->window_height);
 
 	ObjectFBX3d::SetDevice(dxCommon->GetDev());
-
 	ObjectFBX3d::SetCamera(camera);
-
 	ObjectFBX3d::CreateGraphicsPipeline();
-
-	FbxLoader::GetInstance()->Initalize(dxCommon->GetDev());
-
-	//FbxLoader::GetInstance()->LoadModelFromFile("cube");
-
+	FbxLoader::GetInstance()->Initialize(dxCommon->GetDev());
 	FBXModel* fbxModel = nullptr;
-	ObjectFBX3d* objectFBX3d = nullptr;
+	ObjectFBX3d* fbxObj = nullptr;
 	fbxModel = FbxLoader::GetInstance()->LoadModelFromFile("boneTest");
 
-	objectFBX3d = new ObjectFBX3d;
-	objectFBX3d->Initialize();
-	objectFBX3d->SetModel(fbxModel);
-	
+	fbxObj = new ObjectFBX3d();
+	fbxObj->Initialize();
+	fbxObj->SetModel(fbxModel);
 #pragma endregion DirectX初期化処理
 
 #pragma region 描画初期化処理
 
+	Sprite* sprite = nullptr;
+	sprite = new Sprite();
 
 	SpriteCommon* spriteCommon = new SpriteCommon();
 	spriteCommon->initialize(dxCommon->GetDev(), dxCommon->GetCmdList(), winApp->window_width, winApp->window_height);
-	
-	spriteCommon->LoadTexture(0, L"Resources/texture.png");
-	spriteCommon->LoadTexture(1, L"Resources/house.png");
 
+
+	spriteCommon->LoadTexture(11, L"Resources/texture.png");
+	spriteCommon->LoadTexture(1, L"Resources/white.png");
+	spriteCommon->LoadTexture(0, L"Resources/background.png");
 	std::vector<Sprite*> sprites;
-	/*Sprite* sprite = Sprite::Create(spriteCommon, 0);
-	sprites.push_back(sprite);
-	sprite->SetPosition({ 500,300,0 });*/
+	sprite = Sprite::Create(spriteCommon,1, { 0,0 }, false, false);
+	sprite->SetSize({ 1280,720 });
+	PostEffect* postEffect = nullptr;
 
-	for (int i = 0; i < 20; i++)
-	{
-		int texNum = rand() % 2;
-
-		Sprite* sprite = Sprite::Create(spriteCommon, texNum, { 0,0 }, false, false);
-
-		sprite->SetPosition({ (float)(rand() % 1280),(float)(rand() % 720),0 });
-
-		//sprite->SetRotation((float)(rand() % 360));
-
-		sprite->SetSize({ (float)(rand() % 400), (float)(rand() % 100) });
-
-		sprite->TransferVertexBuffer();
-
-		sprites.push_back(sprite);
-		//sprite->SetPosition({ 500,300,0 });
-
-	}
-
-
-	Model* modelPost = Model::LoadFromOBJ("posuto");
+	postEffect = new PostEffect();
+	//postEffect->initialize(spriteCommon,100,{0,0});
+	postEffect->Initialize(spriteCommon, 1, { 0,0 }, 0, 0);
+	//postEffect->SetSize({ 500,500 });
+	Object3d* obj = Object3d::Create();
 	Model* modelChr = Model::LoadFromOBJ("chr_sword");
-
-	Object3d* objPost = Object3d::Create();
-	Object3d* objChr = Object3d::Create();
-
-
-	objPost->SetModel(modelPost);
-	objChr->SetModel(modelPost);
-
-	objPost->SetPosition({ -10,0,-5 });
-	objChr->SetPosition({ +10,0,+5 });
-
-	//objPost->Update();
-	//objChr->Update();
-
+	obj->SetModel(modelChr);
+	obj->SetPosition({ -10,0,-5 });
+	obj->Update();
 #pragma endregion 描画初期化処理
 
 	int counter = 0; // アニメーションの経過時間カウンター
+
+	fbxObj->PlayAnimation(true);
+	//fbxObj->SetRotation({ 0,0.25,0 });
+	fbxObj->SetScale({ 2,2,2 });
 
 	while (true)  // ゲームループ
 	{
@@ -130,7 +103,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 #pragma region DirectX毎フレーム処理
 		// DirectX毎フレーム処理　ここから
-		objectFBX3d->PlayAnimation();
+
 		input->Update();
 
 		const int cycle = 540; // 繰り返しの周期
@@ -139,8 +112,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		float scale = (float)counter / cycle; // [0,1]の数値
 
 		scale *= 360.0f;
-		objPost->SetModel(modelPost);
-		objChr->SetModel(modelPost);
 		if (input->TriggerKey(DIK_0)) // 数字の0キーが押されていたら
 		{
 			OutputDebugStringA("Hit 0\n");  // 出力ウィンドウに「Hit 0」と表示
@@ -152,8 +123,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		{
 			// 画面クリアカラーの数値を書き換える
 			clearColor[1] = 1.0f;
-			objPost->SetModel(modelChr);
-			objChr->SetModel(modelChr);
+			break;
 		}
 
 		// 座標操作
@@ -167,61 +137,56 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		{
 
 		}
-		objectFBX3d->Update();
-	/*	objPost->Update();
-		objChr->Update();*/
-		for (auto& sprite : sprites)
+		fbxObj->Update();
+		sprite->Update();
+
+		postEffect->Update();
+		/*	objPost->Update();
+			objChr->Update();*/
+		/*for (auto& sprite : sprites)
 		{
 			sprite->Update();
-		}
-		
+		}*/
+		obj->Update();
 		// DirectX毎フレーム処理　ここまで
 #pragma endregion DirectX毎フレーム処理
 
 #pragma region グラフィックスコマンド
 
-		dxCommon->PreDraw();
+		postEffect->PreDrawScene(dxCommon->GetCmdList());
+		/*spriteCommon->PreDraw();
 
-		//Object3d::PreDraw(dxCommon->GetCmdList());
-		///*objPost->Draw();
-		//objChr->Draw();*/
-		//Object3d::PostDraw();
-		objectFBX3d->Draw(dxCommon->GetCmdList());
+		sprite->Draw();*/
+		Object3d::PreDraw(dxCommon->GetCmdList());
+		obj->Draw();
+		Object3d::PostDraw();
+		fbxObj->Draw(dxCommon->GetCmdList());
+		postEffect->PostDrawScene(dxCommon->GetCmdList());
+
+
+		dxCommon->PreDraw();
 		spriteCommon->PreDraw();
-		//for (auto& sprite : sprites)
-		//{
-		//	sprite->Draw();
-		//}
 		
+
+		postEffect->Draw();
+		//postEffect->Draw();
+
 		// ４．描画コマンドここまで
 		dxCommon->PostDraw();
 
 
 	}
-	// XAudio2解放
-   // xAudio2.Reset();
-	// 音声データ解放
-   // SoundUnload(&soundData1);
 
-	
+
 #pragma region WindowsAPI後始末
 	winApp->Finalize();
 #pragma endregion WindowsAPI後始末
-	FbxLoader::GetInstance()->Finalize();
+	/*FbxLoader::GetInstance()->Finalize();*/
 //	delete fbxModel;
-	delete objectFBX3d;
+
 
 	delete input;
 	delete winApp;
 	delete spriteCommon;
-	for (auto& sprite : sprites)
-	{
-		delete sprite;
-	}
-	//delete sprite;
-	delete modelPost;
-	delete modelChr;
-	delete objChr;
-	delete objPost;
 	return 0;
 }

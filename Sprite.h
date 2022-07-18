@@ -25,7 +25,7 @@ public:
 		XMMATRIX mat;   // ３Ｄ変換行列
 	};
 
-private:
+protected:
 	//頂点バッファ;
 	ComPtr<ID3D12Resource> vertBuff_;
 	//頂点バッファビュー;
@@ -60,6 +60,7 @@ private:
 	SpriteCommon* SspriteCommon = nullptr;
 
 public:
+	Sprite(/*UINT texNumber, XMFLOAT3 position, XMFLOAT2 size, XMFLOAT4 color, XMFLOAT2 anchorpoint, bool isFlipX, bool isFlipY*/);
 
 	static Sprite* Create(SpriteCommon* spriteCommon, UINT texNumber, XMFLOAT2 anchorpoint = { 0.5f,0.5f }, bool isFlipX = false, bool isFlipY = false);
 

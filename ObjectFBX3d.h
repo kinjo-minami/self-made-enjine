@@ -1,100 +1,108 @@
 #pragma once
+#include "FBXModel.h"
+#include "Camera.h"
+#include "FbxLoader.h"
 
 #include <Windows.h>
 #include <wrl.h>
 #include <d3d12.h>
-#include <DirectXMath.h>
 #include <d3dx12.h>
-#include<string>
-
-#include"FBXModel.h"
-#include"FbxLoader.h"
-#include"Camera.h"
-
+#include <DirectXMath.h>
+#include <string>
 
 class ObjectFBX3d
 {
-private:
-// Microsoft::WRL::を省略
+protected: 
 	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
-	// DirectX::を省略
 	using XMFLOAT2 = DirectX::XMFLOAT2;
 	using XMFLOAT3 = DirectX::XMFLOAT3;
 	using XMFLOAT4 = DirectX::XMFLOAT4;
 	using XMMATRIX = DirectX::XMMATRIX;
-	template <class T> using vector = std::vector<T>;
 
-public:
+public: 
+	static const int MAX_BONES = 32;
+
+public: 
 	struct ConstBufferDataTransform
 	{
-		//XMMATRIX mat;	// ３Ｄ変換行列
 		XMMATRIX viewproj;
 		XMMATRIX world;
 		XMFLOAT3 cameraPos;
 	};
 
-	static const int MAX_BONES = 32;
 	struct ConstBufferDataSkin
 	{
 		XMMATRIX bones[MAX_BONES];
 	};
-private:
-	
-	static ComPtr<ID3D12RootSignature> rootsignature;
 
-	static ComPtr<ID3D12PipelineState> pipelineState;
-
-
-public:
-
+public: 
 	static void SetDevice(ID3D12Device* device) { ObjectFBX3d::device = device; }
-	
-	static void SetCamera(Camera* camera) { ObjectFBX3d::camera = camera;}
-
+	static void SetCamera(Camera* camera) { ObjectFBX3d::camera = camera; }
 	static void CreateGraphicsPipeline();
 
-public:
-	//メンバ変数
+public: 
 	void Initialize();
 
 	void Update();
 
+	void SetModel(FBXModel* model) { this->model = model; }
+
 	void Draw(ID3D12GraphicsCommandList* cmdList);
 
-	void SetModel(FBXModel* fbxModel) { this->FbxModel = fbxModel; }
+	const XMFLOAT3& GetPosition() { return position; }
 
-	void PlayAnimation();
+	void SetPosition(XMFLOAT3 position) { this->position = position; }
 
-private:
-	ComPtr<ID3D12Resource> constBuffTransform;
-	ComPtr<ID3D12Resource> constBuffSkin;
+	const XMFLOAT3& GetScale() { return scale; }
 
-	static ID3D12Device* device;
+	void SetScale(XMFLOAT3 scale) { this->scale = scale; }
 
-	static Camera* camera;
+	const XMFLOAT3& GetRotation() { return rotation; }
 
-private:
+	void SetRotation(XMFLOAT3 rotation) { this->rotation = rotation; }
 
-	XMFLOAT3 scale = { 1.0,1.0,1.0 };
-	// X,Y,Z軸回りのローカル回転角
-	XMFLOAT3 rotation = { 0,0,0 };
-	// ローカル座標
-	XMFLOAT3 position = { 0,0,1 };
-	// ローカルワールド変換行列
+	void PlayAnimation(bool isLoop = true);
+
+	void StopAnimation();
+
+	const bool& GetIsAnimation() { return isPlay; }
+
+protected: 
+	
+	ComPtr<ID3D12Resource> constBufferTransform;
+	
+	XMFLOAT3 scale = { 1, 1, 1 };
+	
+	XMFLOAT3 rotation = { 0, 0, 0 };
+	
+	XMFLOAT3 position = { 0, 0, 0 };
+	
 	XMMATRIX matWorld;
-
-	FBXModel* FbxModel = nullptr;
-
-private:
+	
+	FBXModel* model = nullptr;
+	
+	ComPtr<ID3D12Resource> constBufferSkin;
 	
 	FbxTime frameTime;
-
+	
 	FbxTime startTime;
 	
 	FbxTime endTime;
-
-	FbxTime curentTime;
+	
+	FbxTime currentTime;
 	
 	bool isPlay = false;
+	
+	bool isLoop = false;
 
+private: 
+	
+	static ID3D12Device* device;
+	
+	static Camera* camera;
+	
+	static ComPtr<ID3D12RootSignature> rootsignature;
+	
+	static ComPtr<ID3D12PipelineState> pipelinestate;
 };
+

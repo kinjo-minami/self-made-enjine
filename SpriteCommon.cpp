@@ -116,7 +116,7 @@ void SpriteCommon::SetGraphicsRootDescriptorTable(UINT rootParameterIndex, UINT 
 
 }
 
-ID3D12Resource* SpriteCommon::GetTexBuff(int texnumber)
+ID3D12Resource* SpriteCommon::GetTexBuff(UINT texnumber)
 {
     assert(0 <= texnumber && texnumber < SpriteSRVCount);
 
@@ -258,3 +258,4 @@ void SpriteCommon::CreateGraphicsPipeline()
 
 
 }
+//PostEffectTest

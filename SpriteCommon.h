@@ -11,7 +11,7 @@ private:
 public:
 	static const int SpriteSRVCount = 512;
 
-private:
+protected:
 
 	PipelineSet pipelineSet;
 
@@ -34,7 +34,7 @@ public:
 
 	void SetGraphicsRootDescriptorTable(UINT rootParameterIndex,UINT texnumber);
 
-	ID3D12Resource* GetTexBuff(int texnumber);
+	ID3D12Resource* GetTexBuff(UINT texnumber);
 
 	ID3D12Device* GetDevice() { return Device; }
 

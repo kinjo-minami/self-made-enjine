@@ -78,10 +78,11 @@ void DirectXCommon::InitializeDevice()
 {
 #ifdef _DEBUG
     //デバッグレイヤーをオンに
-    ComPtr<ID3D12Debug> debugController;
+    ComPtr<ID3D12Debug1> debugController;
     if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
     {
         debugController->EnableDebugLayer();
+        debugController->SetEnableGPUBasedValidation(TRUE);
     }
 #endif
 

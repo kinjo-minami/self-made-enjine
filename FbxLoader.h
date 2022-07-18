@@ -4,64 +4,100 @@
 
 #include <d3d12.h>
 #include <d3dx12.h>
-#include<string>
+#include <cassert>
+#include <string>
+#include "FBXModel.h"
 
-#include"FBXModel.h"
 class FbxLoader
 {
-private:
+private: //エイリアス
 	using string = std::string;
 
-	using XMFLOAT2 = DirectX::XMFLOAT2;
-	using XMFLOAT3 = DirectX::XMFLOAT3;
-	using XMFLOAT4 = DirectX::XMFLOAT4;
-	using XMMATRIX = DirectX::XMMATRIX;
-	template <class T> using vector = std::vector<T>;
-	template <class T> using list = std::list<T>;
-
-
-public:
+public: //定数
+	//モデル格納ルートパス
 	static const string baseDirectory;
-
+	//テクスチャがない場合の標準テクスチャファイル名
 	static const string defaultTextureFileName;
 
-public:
+public: //静的メンバ関数
 	/// <summary>
 	/// シングルトンインスタンスの取得
 	/// </summary>
 	/// <returns>インスタンス</returns>
 	static FbxLoader* GetInstance();
 
-	void Initalize(ID3D12Device* device);
+	/// <summary>
+	/// FBXの行列をXMMatrixに変換
+	/// </summary>
+	/// <param name="dst">書き込み先</param>
+	/// <param name="src">元となるFBX行列</param>
+	static void ConvertMatrixFromFbx(DirectX::XMMATRIX* dst, const FbxAMatrix& src);
 
+public: //メンバ関数
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="device">デバイス</param>
+	void Initialize(ID3D12Device* device);
+
+	/// <summary>
+	/// 終了処理
+	/// </summary>
 	void Finalize();
 
-	//void LoadModelFromFile(const string& modelName);
+	/// <summary>
+	/// ファイルからFBXモデル読み込み
+	/// </summary>
+	/// <param name="modelName">モデル名</param>
 	FBXModel* LoadModelFromFile(const string& modelName);
 
-	void ParseNodeRecursive(FBXModel* fbxModel, FbxNode* fbxNode, FBXModel::Node* parent = nullptr);
+	/// <summary>
+	/// ノード構成を解析
+	/// </summary>
+	/// <param name="model">読み込み先モデルオブジェクト</param>
+	/// <param name="fbxNode">解析対象のノード</param>
+	/// <param name="parent">親ノード</param>
+	void ParseNodeRecursive(FBXModel* model, FbxNode* fbxNode, Node* parent = nullptr);
 
-	//メッシュ
-	void ParseMesh(FBXModel* fbxModel, FbxNode* fbxNode);
+	/// <summary>
+	/// メッシュ読み取り
+	/// </summary>
+	/// <param name="model">読み込み先モデルオブジェクト</param>
+	/// <param name="fbxNode">解析対象のノード</param>
+	void ParseMesh(FBXModel* model, FbxNode* fbxNode);
 
-	void ParseMeshVertices(FBXModel* fbxModel, FbxMesh* fbxMesh);
+	/// <summary>
+	/// 頂点座標読み取り
+	/// </summary>
+	void ParseMeshVertices(FBXModel* model, FbxMesh* fbxMesh);
 
-	void ParseMeshFaces(FBXModel* fbxModel, FbxMesh* fbxMesh);
+	/// <summary>
+	/// 面情報読み取り
+	/// </summary>
+	void ParseMeshFaces(FBXModel* model, FbxMesh* fbxMesh);
 
-	void ParseMaterial(FBXModel* fbxModel, FbxNode* fbxNode);
+	/// <summary>
+	/// マテリアル読み取り
+	/// </summary>
+	void ParseMaterial(FBXModel* model, FbxNode* fbxNode);
 
-	void LoadTexture(FBXModel* fbxModel, const std::string& fullpath);
+	/// <summary>
+	/// テクスチャ読み込み
+	/// </summary>
+	void LoadTexture(FBXModel* model, const std::string& fullPath);
 
-	static void ConvertMatrixFromFbx(XMMATRIX* dst, const FbxMatrix& src);
-
-	void ParseSkin(FBXModel* fbxModel, FbxMesh* fbxMesh);
-
-
-	//ディレクトリを含んだファイルパスからファイル名を抽出する
+	/// <summary>
+	/// ディレクトリを含んだファイルパスからファイル名を抽出する
+	/// </summary>
 	std::string ExtractFileName(const std::string& path);
 
+	/// <summary>
+	/// スキニング情報の読み取り
+	/// </summary>
+	void ParseSkin(FBXModel* model, FbxMesh* fbxMesh);
 
-private:
+private: //メンバ関数
 	// privateなコンストラクタ（シングルトンパターン）
 	FbxLoader() = default;
 	// privateなデストラクタ（シングルトンパターン）
@@ -71,12 +107,11 @@ private:
 	// コピー代入演算子を禁止（シングルトンパターン）
 	void operator=(const FbxLoader& obj) = delete;
 
-private:
-
+private: //メンバ変数
+	//D3D12デバイス
 	ID3D12Device* device = nullptr;
-
+	//FBXマネージャ
 	FbxManager* fbxManager = nullptr;
-
+	//FBXインポータ
 	FbxImporter* fbxImporter = nullptr;
-
 };
